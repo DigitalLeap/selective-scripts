@@ -28,6 +28,8 @@ class SelectiveScripts{
 
 	protected static $_instance = null;
 
+	protected $options = null;
+
     public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 		self::$_instance = new self();
@@ -35,80 +37,90 @@ class SelectiveScripts{
 		return self::$_instance;
 	}
 
-	function __construct(){
+	public function __construct(){
 		
 		add_action('admin_menu', array( $this, 'add_admin_page' ) );
 		add_action('admin_init', array( $this, 'init_settings' ) );
 
+		add_action( 'wp_head', array( $this, 'output_header_scripts' ), 50 );
+		add_action( 'wp_footer', array( $this, 'output_footer_scripts' ), 50 );
+
 	}
 
-	private function add_admin_page() {
-		add_options_page( 'Selective Scripts Settings', 'Selective Scripts', 'manage_options', 'selective-scripts', 'render_admin_page' );
+	public function add_admin_page() {
+		add_options_page( 'Selective Scripts Settings', 'Selective Scripts', 'manage_options', 'selective-scripts', array( $this, 'render_admin_page' ) );
 	}
 
-	private function render_admin_page() {
+	public function render_admin_page() {
+
+		$this->options = get_option( 'selective_scripts' );
+
 		?>
 		<div class="wrap">
 			<h2>Selective Scripts</h2>
-			Set scripts and which pages you'd like them not to appear on.
-			<form action="options.php" method="post">
-				<?php settings_fields( 'selective-scripts' ); ?>
-				<?php do_settings_sections( 'selective_header_scripts' ); ?>
-				<?php do_settings_sections( 'selective_footer_scripts' ); ?>
-				 
-				<input name="Submit" type="submit" value="<?php esc_attr_e( 'Save Changes'); ?>" />
-			</form>
-		</div> 
-		<?php
-	}
-
-	private function render_adming_page() {
-		?>
-		<div class="wrap">
-			<h2>Selective Scripts</h2>
-			Set scripts and which pages you'd like them not to appear on.
+			<p>Set scripts and which pages you'd like them not to appear on.</p>
 			<form action="options.php" method="post">
 				<?php settings_fields( 'selective_scripts' ); ?>
-				<?php do_settings_sections( 'selective_header_scripts' ); ?>
-				<?php do_settings_sections( 'selective_footer_scripts' ); ?>
+				<?php do_settings_sections( 'selective-scripts' ); ?>
 				 
-				<input name="Submit" type="submit" value="<?php esc_attr_e( 'Save Changes'); ?>" />
+	        	<?php submit_button(); ?>
 			</form>
 		</div> 
 		<?php
 	}
 
-	private function init_settings(){
-		register_setting( 'selective_scripts', 'selective_scripts', 'validate_options' );
+	public function init_settings(){
+		register_setting( 'selective_scripts', 'selective_scripts', array( $this, 'validate_options' ) );
 		
-		add_settings_section('header_section', 'Header Scripts', 'header_section_render', 'selective-scripts');
-		add_settings_field('header_scripts', 'Header Script', 'header_scripts_textarea', 'selective-scripts', 'header_section');
+		add_settings_section('header_section', 'Header Scripts', array( $this, 'header_section_render' ), 'selective-scripts');
+		add_settings_field('header_scripts', 'Header Script', array( $this, 'header_scripts_textarea' ), 'selective-scripts', 'header_section');
 
-		add_settings_section('footer_section', 'Header Scripts', 'header_section_render', 'selective-scripts');
-		add_settings_field('footer_scripts', 'Footer Script', 'footer_scripts_textarea', 'selective_footer_scripts', 'footer_section');
+		add_settings_section('footer_section', 'Footer Scripts', array( $this, 'footer_section_render' ), 'selective-scripts');
+		add_settings_field('footer_scripts', 'Footer Script', array( $this, 'footer_scripts_textarea' ), 'selective-scripts', 'footer_section');
 
 	}
 
-	private function header_section_render() {
-		echo '<p>Scripts that will go in the <head> of your website. Please include <script> tags.</p>';
+	public function header_section_render() {
+		echo '<p>Scripts that will go in the ' . esc_html( '<head>' ) . ' of your website. Please include ' . esc_html( '<script>' ) . ' tags.</p>';
 	}
 
-	private function footer_section_render() {
-		echo '<p>Scripts that will go before the </body> of your website. Please include <script> tags.</p>';
+	public function footer_section_render() {
+		echo '<p>Scripts that will go before the ' . esc_html( '</body>' ) . ' of your website. Please include ' . esc_html( '<script>' ) . ' tags.</p>';
 	}
 
-	private function header_scripts_textarea() {
-		$options = get_option('selective_scripts');
-		echo "<textarea id='header_scripts' name='selective_scripts[header_scripts]'>{$options['header_scripts']}'></textarea>";
+	public function header_scripts_textarea() {
+		printf(
+			'<textarea id="header_scripts" name="selective_scripts[header_scripts]">%s</textarea>',
+			isset( $this->options['header_scripts'] ) ? esc_attr( $this->options['header_scripts'] ) : ''
+		);
 	}
 
-	private function footer_scripts_textarea() {
-		$options = get_option('selective_scripts');
-		echo "<textarea id='footer_scripts' name='selective_scripts[footer_scripts]'>{$options['footer_scripts']}'></textarea>";
+	public function footer_scripts_textarea() {
+		printf(
+			'<textarea id="header_scripts" name="selective_scripts[footer_scripts]">%s</textarea>',
+			isset( $this->options['footer_scripts'] ) ? esc_attr( $this->options['footer_scripts'] ) : ''
+		);
 	}
 
-	private function validate_options($input) {
+	public function validate_options($input) {
 		return $input;
+	}
+
+	public function output_header_scripts() {
+		echo $this->get_scripts('header_scripts');
+	}
+
+	public function output_footer_scripts() {
+		echo $this->get_scripts('footer_scripts');
+	}
+
+	public function get_scripts( $type ){
+		$scripts = get_option( 'selective_scripts' );
+		if( isset($scripts[$type]) ):
+			return $scripts[$type];
+		else:
+			return '';
+		endif;
 	}
 }
 
