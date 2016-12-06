@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Selective Scripts
-Plugin URI:  http://wpjoburg.co.za
+Plugin URI:  https://leapsandbounds.io
 Description: Allows you to add scripts to the header / footer of your WordPress website. You can also remove the pages they appear on and add scripts to specific pages.
 Version:     0.5
-Author:      WP Joburg
-Author URI:  http://wpjoburg.co.za
+Author:      Seags
+Author URI:  https://leapsandbounds.io
 License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: selective-scripts

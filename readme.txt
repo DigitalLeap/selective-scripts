@@ -1,12 +1,11 @@
 === Plugin Name ===
-Contributors: seags
-Donate link: url
+Contributors: DigitalLeap, seags
 Tags: javascript, scripts
 Requires at least: 4.6
 Tested up to: 4.6
 Stable tag: 0.5
 
-Allows you to add scripts to the header / footer of your WordPress website. 
+Allows you to add scripts to the header / footer of your WordPress website.
 
 == Description ==
 
